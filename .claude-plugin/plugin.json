@@ -1,0 +1,10 @@
+{
+  "name": "lang-mode",
+  "version": "0.1.0",
+  "description": "Make Claude reply in your language: once per session (/lang-once) or always (/lang-memo).",
+  "license": "MIT",
+  "author": {
+    "name": "DamengRandom"
+  },
+  "repository": "https://github.com/DamengRandom/lang-mode"
+}

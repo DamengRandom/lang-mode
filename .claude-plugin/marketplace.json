@@ -1,0 +1,14 @@
+{
+  "name": "lang-mode",
+  "owner": {
+    "name": "DamengRandom"
+  },
+  "plugins": [
+    {
+      "name": "lang-mode",
+      "source": "./",
+      "description": "Make Claude reply in your language: once per session or always."
+    }
+  ],
+  "description": "Make Claude reply in your language."
+}
