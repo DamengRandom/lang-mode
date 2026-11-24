@@ -1,6 +1,6 @@
 {
   "name": "lang-mode",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Make Claude reply in your language: once per session (/lang-once) or always (/lang-memo).",
   "license": "MIT",
   "author": {

@@ -13,11 +13,12 @@ Make Claude Code reply in **your** language — just for this session, or in eve
 
 ### Commands
 
-| Command | What it does |
-|---|---|
+| Command             | What it does                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------- |
 | `/lang-once <lang>` | Reply in `<lang>` for the **current session only**. A new session goes back to normal. |
-| `/lang-memo <lang>` | Reply in `<lang>` in **every new session** (saved to `~/.claude/CLAUDE.md`). |
-| `/lang-memo off` | Remove the saved language. New sessions use the default language again. |
+| `/lang-memo <lang>` | Reply in `<lang>` in **every new session** (saved to `~/.claude/CLAUDE.md`).           |
+| `/lang-memo off`    | Remove the saved language. New sessions use the default language again.                |
+| `/lang-mode:uninstall`   | Remove the saved language **and** uninstall the plugin. Restart Claude Code after.     |
 
 `<lang>` can be an ISO code or a name: `zh` (Chinese), `es` (Spanish), `ja` (Japanese), `fr` (French), `de` (German), `ko` (Korean), `spanish`, ...
 Note: Chinese is `zh`, not `cn` (`cn` is the country code for China).
@@ -25,6 +26,8 @@ Note: Chinese is `zh`, not `cn` (`cn` is the country code for China).
 Code, commands, file paths and identifiers always stay in their original form.
 
 ### Install
+
+> **Platform: macOS only.** `/lang-memo` runs a bash script and has only been tested on macOS. Linux may work but is not supported; <b>\*\*Windows & Linux\*\*</b> are not supported yet.
 
 Requires [Claude Code](https://claude.com/claude-code). In a terminal:
 
@@ -44,6 +47,14 @@ Restart Claude Code, then type `/lang-once zh` or `/lang-memo es`.
 
 ### Uninstall
 
+Easiest: type `/lang-mode:uninstall`, then restart Claude Code. It removes the saved language from `~/.claude/CLAUDE.md` and uninstalls the plugin in one step.
+
+`/lang-mode:uninstall` only removes what lang-mode wrote. If your `CLAUDE.md` has its own language rule (e.g. "Always reply in Chinese"), Claude keeps following it.
+
+If you installed lang-mode at project scope, the uninstall step may fail. Your saved language is still removed, and the command prints what to run by hand. Add `--scope project` to the `claude plugin uninstall` command it prints.
+
+Manual way:
+
 1. **First** run `/lang-memo off` if you ever used `/lang-memo`. Uninstalling removes the commands, but not the line saved in `~/.claude/CLAUDE.md`.
 2. Then:
 
@@ -59,17 +70,30 @@ Forgot step 1? Open `~/.claude/CLAUDE.md` and delete everything between `<!-- la
 - `/lang-once` is a prompt that tells Claude which language to use for the rest of the conversation. Nothing is written to disk.
 - `/lang-memo` runs `scripts/lang-memo.sh`, which adds (or replaces) one marked block in `~/.claude/CLAUDE.md`. Claude Code reads that file at the start of every session. `off` removes the block and leaves the rest of the file untouched.
 
+### Full flow
+
+```
+Install:    /plugin marketplace add ... → /plugin install ... → restart
+              ↓ (this step does not touch CLAUDE.md)
+One-off:    /lang-once zh   → current session only, nothing written to disk
+Long-term:  /lang-memo zh   → writes to CLAUDE.md (uses a temp file, deleted right after)
+Switch:     /lang-memo es   → replaces the zh block with an es block
+Turn off:   /lang-memo off  → removes the block from CLAUDE.md, plugin stays installed
+Uninstall:  /lang-mode:uninstall → restart   (= /lang-memo off + uninstall + marketplace remove)
+```
+
 ---
 
 ## 中文
 
 ### 命令
 
-| 命令 | 作用 |
-|---|---|
-| `/lang-once <语言>` | **仅本次会话**用该语言回答。开新会话后恢复默认。 |
+| 命令                | 作用                                                               |
+| ------------------- | ------------------------------------------------------------------ |
+| `/lang-once <语言>` | **仅本次会话**用该语言回答。开新会话后恢复默认。                   |
 | `/lang-memo <语言>` | **之后每个新会话**都用该语言回答（保存在 `~/.claude/CLAUDE.md`）。 |
-| `/lang-memo off` | 删除保存的语言设置，新会话恢复默认语言。 |
+| `/lang-memo off`    | 删除保存的语言设置，新会话恢复默认语言。                           |
+| `/lang-mode:uninstall`   | 删除保存的语言设置，**并且**卸载插件。完成后需重启 Claude Code。   |
 
 `<语言>` 可以写语言代码或名称：`zh`（中文）、`es`（西班牙语）、`ja`（日语）、`fr`（法语）、`de`（德语）、`ko`（韩语）、`spanish` 等。
 注意：中文的代码是 `zh`，不是 `cn`（`cn` 是中国的国家代码）。
@@ -77,6 +101,8 @@ Forgot step 1? Open `~/.claude/CLAUDE.md` and delete everything between `<!-- la
 代码、命令、文件路径和标识符始终保持原样，不会被翻译。
 
 ### 安装
+
+> **平台：仅支持 macOS。** `/lang-memo` 依赖 bash 脚本，只在 macOS 上测试过。Linux 可能可以运行但不提供支持；不支持 Windows。
 
 需要先安装 [Claude Code](https://claude.com/claude-code)。在终端运行：
 
@@ -96,6 +122,14 @@ claude plugin install lang-mode@lang-mode
 
 ### 卸载
 
+最简单的方法：输入 `/lang-mode:uninstall`，然后重启 Claude Code。它会一步完成两件事：删除 `~/.claude/CLAUDE.md` 里保存的语言设置，并卸载插件。
+
+`/lang-mode:uninstall` 只删除 lang-mode 自己写入的内容。如果你的 `CLAUDE.md` 里还有你自己写的语言规则（比如"总是用中文回复"），Claude 会继续遵守。
+
+如果你是在项目范围（project scope）安装的 lang-mode，卸载插件这一步可能会失败。保存的语言设置仍会被删除，命令会打印出需要手动运行的命令。在它打印的 `claude plugin uninstall` 命令后面加上 `--scope project` 即可。
+
+手动方法：
+
 1. 如果用过 `/lang-memo`，**先**运行 `/lang-memo off`。卸载插件只会删除命令，不会删除已经写入 `~/.claude/CLAUDE.md` 的那段设置。
 2. 然后运行：
 
@@ -110,6 +144,18 @@ claude plugin marketplace remove lang-mode
 
 - `/lang-once` 只是一段提示词，告诉 Claude 本次对话之后都用指定语言回答，不会写入任何文件。
 - `/lang-memo` 会运行 `scripts/lang-memo.sh`，在 `~/.claude/CLAUDE.md` 中添加（或替换）一段带标记的设置。Claude Code 每次启动会话都会读取这个文件。`off` 只删除这段设置，文件的其他内容不受影响。
+
+### 完整流程
+
+```
+安装：    /plugin marketplace add ... → /plugin install ... → 重启
+            ↓（这一步不碰 CLAUDE.md）
+临时使用：/lang-once zh   → 只对本次会话生效，不写文件
+长期使用：/lang-memo zh   → 写入 CLAUDE.md（过程中用 tmp，用完即删）
+换语言：  /lang-memo es   → 用 es 块替换 zh 块
+停用：    /lang-memo off  → 从 CLAUDE.md 删掉语言块，插件仍在
+卸载：    /lang-mode:uninstall → 重启   （= /lang-memo off + uninstall + marketplace remove）
+```
 
 ---
 

@@ -11,6 +11,14 @@ if [ -z "$lang" ]; then
   exit 0
 fi
 
+# Whatever we accept is written into CLAUDE.md and loaded every session, so allow
+# only ASCII letters, space, hyphen and non-ASCII bytes (e.g. 中文); no newlines, quotes, <>, $.
+# The trailing "." survives $(...), which would otherwise drop a leftover newline.
+if [ "$(printf '%s.' "$lang" | LC_ALL=C tr -d 'A-Za-z \200-\377-')" != . ] || [ "${#lang}" -gt 40 ]; then
+  echo "ERROR: invalid language \"$lang\". Use a name or code like zh, es, french."
+  exit 0
+fi
+
 mkdir -p "$(dirname "$file")"
 touch "$file"
 
@@ -22,8 +30,13 @@ awk -v s="$start" -v e="$end" '
   blank   { print ""; blank = 0 }
   $0 == "" { blank = 1; next }
   { print }
-  END { if (blank) print "" }
-' "$file" > "$tmp"
+  END { if (skip) exit 2; if (blank) print "" }
+' "$file" > "$tmp" || {
+  # Start marker without a matching end: dropping lines to EOF would delete user content.
+  rm -f "$tmp"
+  echo "ERROR: $file has '$start' without a matching '$end'. Nothing changed; fix the markers by hand."
+  exit 0
+}
 
 if [ "$lang" = "off" ]; then
   cat "$tmp" > "$file"; rm -f "$tmp"
